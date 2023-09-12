@@ -1,18 +1,33 @@
+# built-in
 from datetime import datetime
+from os import path
+
+# third-party
 from dateutil.relativedelta import relativedelta
 from PyInquirer import prompt
 import typer
+
+# interfaces
 from koala.application.core.interfaces.use_case import DTO
 
+# use-cases
 from koala.application.use_cases.create_expense import CreateExpenseUseCase, CreateExpenseUseCaseRequestDTO
+
+# entities
 from koala.domain.entities.expense import ExpenseType
+
+# adapters
 from koala.infra.adapters.database.sqlite import SQLite
 from koala.infra.adapters.database.sqlite.models.base import Base
 from koala.infra.adapters.repositories.expenses import ExpensesRepository
+from koala.infra.core.utils.path import Path
 
 cli = typer.Typer()
 
-with SQLite(connection_str="sqlite:////home/alexandresenpai/scripts/koala/koala/infra/adapters/database/sqlite/koala.sqlite") as database:
+
+connection_string = f"sqlite:///{Path.join(__file__, '../../adapters/database/sqlite/koala.sqlite')}"
+
+with SQLite(connection_str=connection_string) as database:
     Base.metadata.create_all(database._engine)
 
     @cli.command(name='add_expense')
