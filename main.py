@@ -1,3 +1,3 @@
-from koala import cli
+from koala import create_cli
 
-cli()
+create_cli()

@@ -40,20 +40,11 @@ class Expense(Entity):
     
     @property
     def installment_of(self) -> Union[int, None]:
-        return self._installment_of \
-            if self._installment_of is not None \
-            and self._installment_to > 0 \
-            and self._installment_of <= self._installment_to \
-            and self._installment_of != "" \
-            else None
+        return self._installment_of
 
     @property
     def installment_to(self) -> Union[int, None]:
-        return self._installment_to \
-            if self._installment_to is not None \
-            and self._installment_to >= self._installment_of \
-            and self._installment_to != "" \
-            else None
+        return self._installment_to
 
     @installment_of.setter
     def installment_of(self, installment: int):
