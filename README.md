@@ -71,7 +71,7 @@ python main.py import-expenses
 
 Follow the prompts to select the PDF and confirm the expenses to be imported.
 
-#### Supported Banks for PDF Import
+## Supported Banks for PDF Import
 The application currently supports importing expenses from credit card statements in PDF format from the following banks:
 
 - Nubank
