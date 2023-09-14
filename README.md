@@ -18,7 +18,7 @@
 
 ## Overview
 
-Koala Expense Manager is a comprehensive solution for managing your expenses. It provides a Command Line Interface (CLI) for creating and importing expenses. The application is built using Python and follows the Clean Architecture principles.
+Koala is a comprehensive solution for managing your expenses. It provides a Command Line Interface (CLI) for creating and importing expenses. The application is built using Python and follows the Clean Architecture principles.
 
 ## Architecture
 
