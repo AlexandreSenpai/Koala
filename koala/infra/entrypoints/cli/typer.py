@@ -37,7 +37,17 @@ def init_database() -> SQLite:
     Base.metadata.create_all(database._engine)
     return database
 
-def register_command(name: str, command: ICommand, cli: typer.Typer, ) -> Union[None, Exception]:
+def register_command(name: str, command: ICommand, cli: typer.Typer, ) -> None:
+    """Register a command to the CLI.
+    
+    Args:
+        name: The name of the command.
+        command: The command instance.
+        cli: The Typer CLI instance.
+        
+    Returns:
+        None: None if successful, raises an Exception otherwise.
+    """
     if isinstance(command, ICommand):
         cli.command(name=name)(command.run)
         return
@@ -50,6 +60,9 @@ def create_cli() -> None:
 
     cli = typer.Typer()
     with init_database() as database:
+        if database._session is None:
+            raise Exception('Could not open a valid database session.')
+        
         expenses_repository = ExpensesRepository(session=database._session)
         create_expense_use_case = CreateExpenseUseCase(expenses_repository=expenses_repository)
 

@@ -23,10 +23,19 @@ from koala.infra.core.interfaces.command import ICommand
 from koala.infra.core.interfaces.pdf_parser import MonetaryValues
 
 class AvailableExtractors(Enum):
+    """Enum for available PDF extractors."""
     NUBANK = 'nubank'
     C6 = 'c6'
 
 class ImportExpenses(ICommand):
+    """Command class for importing expenses from PDF.
+
+    This class is responsible for handling the command-line interface for importing expenses.
+
+    Attributes:
+        __extractors: A dictionary mapping extractor names to their instances.
+        _create_expense_use_case: A use case for creating expenses.
+    """
     def __init__(self,
                  create_expense_use_case: IUseCase) -> None:
         self.__extractors: Dict[str, IExtractExpensesFromPDF] = {}
@@ -35,6 +44,15 @@ class ImportExpenses(ICommand):
     def add_extractor(self, 
                       name: str, 
                       extractor: IExtractExpensesFromPDF) -> bool:
+        """Adds a new extractor to the list of available extractors.
+
+        Args:
+            name: The name of the extractor.
+            extractor: The extractor instance.
+
+        Returns:
+            bool: True if the extractor was added, False otherwise.
+        """
         if name in self.__extractors:
             logging.warn('Could not add extractor because it already exists.')
             return False
@@ -42,13 +60,31 @@ class ImportExpenses(ICommand):
         return True
     
     def get_extractor(self, name: AvailableExtractors) -> IExtractExpensesFromPDF:
+        """Retrieves an extractor by its name.
+
+        Args:
+            name: The name of the extractor.
+
+        Returns:
+            IExtractExpensesFromPDF: The extractor instance.
+
+        Raises:
+            Exception: If the extractor was not found.
+        """
         if name.value in self.__extractors:
             return self.__extractors[name.value]
         
         raise Exception('This extractor was not added.')
 
     def get_extractor_from_client(self) -> IExtractExpensesFromPDF:
+        """Prompts the user to select an extractor.
 
+        Returns:
+            IExtractExpensesFromPDF: The selected extractor instance.
+
+        Raises:
+            Exception: If an invalid option was selected.
+        """
         extractor_question = [{ 
             'type': 'list',
             'name': 'extractor',
@@ -64,6 +100,14 @@ class ImportExpenses(ICommand):
             raise Exception('Invalid extractor option.')
     
     def get_import_confirmation_from_client(self, expenses: List[MonetaryValues]) -> bool:
+        """Prompts the user for confirmation to import expenses.
+
+        Args:
+            expenses: The list of expenses to be imported.
+
+        Returns:
+            bool: True if the user confirms, False otherwise.
+        """
         print(f"[bold yellow]You are going to import {len(expenses)} expenses.[/bold yellow]")
         
         output_table = table.Table("Index", 
@@ -93,11 +137,16 @@ class ImportExpenses(ICommand):
         return False
 
     def get_file_path_from_client(self) -> str:
+        """Prompts the user for the file path of the PDF to import.
+
+        Returns:
+            str: The file path provided by the user.
+        """
         return typer.prompt("Bank bill ABSOLUTE file path")
     
     def get_expense_type(self) -> ExpenseType:
-        """Prompts the user to select the type of installment for the expense.
-        
+        """Prompts the user to select the type of expense.
+
         Returns:
             ExpenseType: The type of expense selected by the user.
         """
@@ -120,6 +169,11 @@ class ImportExpenses(ICommand):
         return convert_str_to_enum[type_answer['type']]
     
     def create_expenses(self, expenses: List[MonetaryValues]) -> None:
+        """Creates expenses based on the extracted data.
+
+        Args:
+            expenses: The list of expenses to be created.
+        """
         for expense in expenses:
             expense_type = ExpenseType.INSTALLMENT
             if expense.installment_of is None:
@@ -136,6 +190,10 @@ class ImportExpenses(ICommand):
             self._create_expense_use_case.execute(data=DTO(data=data))
         
     def run(self) -> None:
+        """Executes the command to import and create expenses.
+
+        This method runs the command-line interface for importing and creating expenses.
+        """
         provider = self.get_extractor_from_client()
         expenses: List[MonetaryValues] = []
 

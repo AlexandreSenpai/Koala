@@ -21,7 +21,14 @@ from koala.infra.core.interfaces.command import ICommand
 
 
 class CreateExpenseCommand(ICommand):
-    """Command class for creating expenses."""
+    """Command class for creating expenses.
+
+    This class is responsible for handling the command-line interface for creating expenses.
+
+    Attributes:
+        _create_expense_use_case: A use case for creating expenses.
+    """
+
 
     def __init__(self, 
                  create_expense_use_case: IUseCase[CreateExpenseUseCaseRequestDTO, 
@@ -29,7 +36,7 @@ class CreateExpenseCommand(ICommand):
         """Initializes the CreateExpenseCommand class.
         
         Args:
-            create_expense_use_case (IUseCase): A use case for creating expenses.
+            create_expense_use_case: A use case for creating expenses.
         """
         self._create_expense_use_case = create_expense_use_case
 
@@ -94,7 +101,11 @@ class CreateExpenseCommand(ICommand):
                                                installment_to=installment_to) for expense in expenses]
         
     def run(self) -> None:
-        """Executes the command to create expenses."""
+        """Executes the command to create expenses.
+
+        This method runs the command-line interface for creating expenses, including collecting user input
+        and calling the use case to create the expenses.
+        """
 
         print(f'[bold yellow]Welcome to expense creator.[/bold yellow]')
         while True:
