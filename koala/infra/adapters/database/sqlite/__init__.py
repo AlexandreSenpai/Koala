@@ -5,12 +5,12 @@ from sqlalchemy.orm import sessionmaker, Session
 from koala.infra.core.interfaces.database import IDatabase
 
 
-class SQLite(IDatabase):
+class SQLite(IDatabase[Connection]):
     def __init__(self, connection_str: str) -> None:
         self._connection_str = connection_str
         self._engine: Engine = create_engine(self._connection_str, echo=False)
-        self._connection: Connection = None
-        self._session: Session = None
+        self._connection: Union[Connection, None] = None
+        self._session: Union[None, Session] = None
 
     def __enter__(self):
         self.connect()

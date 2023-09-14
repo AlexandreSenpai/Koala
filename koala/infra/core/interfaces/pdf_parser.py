@@ -9,8 +9,8 @@ class MonetaryValues:
     purchased_at: Union[str, datetime]
     name: str
     amount: str
-    installment_of: str
-    installment_to: str
+    installment_of: Union[str, None]
+    installment_to: Union[str, None]
 
 class IPDFParser(ABC):
     @abstractmethod

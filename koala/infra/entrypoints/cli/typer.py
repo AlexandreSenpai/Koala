@@ -6,6 +6,11 @@ import typer
 
 # use-cases
 from koala.application.use_cases.create_expense import CreateExpenseUseCase
+from koala.application.use_cases.import_expenses_from_pdf import ExtractExpensesFromPDFUseCase
+
+# parsers
+from koala.application.parsers.pdf.c6 import C6Parser
+from koala.application.parsers.pdf.nubank import NubankParser
 
 # interfaces
 from koala.infra.core.interfaces.command import ICommand
@@ -15,10 +20,10 @@ from koala.infra.adapters.database.sqlite import SQLite
 from koala.infra.adapters.database.sqlite.models.base import Base
 from koala.infra.adapters.repositories.expenses import ExpensesRepository
 from koala.infra.core.utils.path import Path
+
+# commands
 from koala.infra.entrypoints.cli.commands.create_expense import CreateExpenseCommand
 from koala.infra.entrypoints.cli.commands.import_expenses_by_pdf import ImportExpenses
-from koala.infra.parsers.pdf.c6 import C6Parser
-from koala.infra.parsers.pdf.nubank import NubankParser
 
 def init_database() -> SQLite:
     """Initialize the SQLite database and create all necessary tables.
@@ -53,10 +58,10 @@ def create_cli() -> None:
                          cli=cli)
 
         import_expenses = ImportExpenses(create_expense_use_case=create_expense_use_case)
-        import_expenses.add_parser(name='nubank',
-                                   parser=NubankParser())
-        import_expenses.add_parser(name='c6',
-                                   parser=C6Parser())
+        import_expenses.add_extractor(name='nubank',
+                                      extractor=ExtractExpensesFromPDFUseCase(pdf_parser=NubankParser()))
+        import_expenses.add_extractor(name='c6',
+                                      extractor=ExtractExpensesFromPDFUseCase(pdf_parser=C6Parser()))
 
         register_command(name='import-expenses', 
                          command=import_expenses, 

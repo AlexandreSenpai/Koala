@@ -15,19 +15,17 @@ class Expense(Entity):
     name: str
     type: ExpenseType
     amount: float
-    installment_of: int = None
-    installment_to: int = None
 
     def __init__(self,
                  purchased_at: datetime,
                  name: str,
                  type: ExpenseType,
                  amount: float,
-                 installment_of: int = None,
-                 installment_to: int = None,
-                 id: Union[int, str] = None, 
-                 created_at: datetime = None, 
-                 updated_at: datetime = None) -> None:
+                 installment_of: Union[int, None] = None,
+                 installment_to: Union[int, None] = None,
+                 id: Union[int, str, None] = None, 
+                 created_at: Union[datetime, None] = None, 
+                 updated_at: Union[datetime, None] = None) -> None:
         super().__init__(id=id, 
                          created_at=created_at, 
                          updated_at=updated_at)

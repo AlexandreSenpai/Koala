@@ -2,12 +2,14 @@
 from datetime import datetime
 from enum import Enum
 import logging
-from typing import Dict, List, Literal, Union
+from typing import Dict, List, Literal
 
 # third-party
 from PyInquirer import prompt
 import typer
 from rich import print, console, table
+from koala.application.core.interfaces.extract_expenses_from_pdf import (ExtractExpensesFromPDFUseCaseRequestDTO, 
+                                                                         IExtractExpensesFromPDF)
 from koala.application.core.interfaces.use_case import DTO, IUseCase
 from koala.application.use_cases.create_expense import CreateExpenseUseCaseRequestDTO
 from koala.domain.entities.expense import ExpenseType
@@ -18,46 +20,48 @@ from koala.domain.entities.expense import ExpenseType
 
 # interfaces
 from koala.infra.core.interfaces.command import ICommand
-from koala.infra.core.interfaces.pdf_parser import IPDFParser, MonetaryValues
+from koala.infra.core.interfaces.pdf_parser import MonetaryValues
 
-class AvailableParsers(Enum):
+class AvailableExtractors(Enum):
     NUBANK = 'nubank'
     C6 = 'c6'
 
 class ImportExpenses(ICommand):
     def __init__(self,
                  create_expense_use_case: IUseCase) -> None:
-        self.__parsers: Dict[str, IPDFParser] = {}
+        self.__extractors: Dict[str, IExtractExpensesFromPDF] = {}
         self._create_expense_use_case = create_expense_use_case
     
-    def add_parser(self, name: str, parser: IPDFParser) -> bool:
-        if name in self.__parsers:
-            logging.warn('Could not add parser because it already exists.')
+    def add_extractor(self, 
+                      name: str, 
+                      extractor: IExtractExpensesFromPDF) -> bool:
+        if name in self.__extractors:
+            logging.warn('Could not add extractor because it already exists.')
             return False
-        self.__parsers[name] = parser
+        self.__extractors[name] = extractor
         return True
     
-    def get_parser(self, name: AvailableParsers) -> Union[IPDFParser, Exception]:
-        if name.value in self.__parsers:
-            return self.__parsers[name.value]
+    def get_extractor(self, name: AvailableExtractors) -> IExtractExpensesFromPDF:
+        if name.value in self.__extractors:
+            return self.__extractors[name.value]
         
-        raise Exception('This parser was not added.')
+        raise Exception('This extractor was not added.')
 
-    def get_provider_from_client(self) -> IPDFParser:
+    def get_extractor_from_client(self) -> IExtractExpensesFromPDF:
 
-        provider_question = [{ 
+        extractor_question = [{ 
             'type': 'list',
-            'name': 'parser',
+            'name': 'extractor',
             'message': 'Select the Available Provider',
-            'choices': [parser.name.capitalize() for parser in AvailableParsers]
+            'choices': [extractor.name.capitalize() for extractor in AvailableExtractors]
         }]
         
-        provider_answer: Dict[Literal["parser"], str] = prompt(provider_question)
+        extractor_answer: Dict[Literal["extractor"], str] = prompt(extractor_question)
         try:
-            parser_name = AvailableParsers[provider_answer['parser'].upper()]
-            return self.get_parser(name=parser_name)
+            extractor_name = AvailableExtractors[extractor_answer['extractor'].upper()]
+            return self.get_extractor(name=extractor_name)
         except KeyError:
-            raise Exception('Invalid provider option.')
+            raise Exception('Invalid extractor option.')
     
     def get_import_confirmation_from_client(self, expenses: List[MonetaryValues]) -> bool:
         print(f"[bold yellow]You are going to import {len(expenses)} expenses.[/bold yellow]")
@@ -101,8 +105,7 @@ class ImportExpenses(ICommand):
             'type': 'list',
             'name': 'type',
             'message': 'Expense Type',
-            'choices': [ExpenseType.INSTALLMENT.value, 
-                        ExpenseType.FIXED.value, 
+            'choices': [ExpenseType.FIXED.value, 
                         ExpenseType.VARIABLE.value]
         }]
         
@@ -125,7 +128,7 @@ class ImportExpenses(ICommand):
     
             data = CreateExpenseUseCaseRequestDTO(name=expense.name,
                                                   purchased_at=expense.purchased_at,
-                                                  amount=expense.amount,
+                                                  amount=float(expense.amount),
                                                   installment_of=expense.installment_of,
                                                   installment_to=expense.installment_to,
                                                   type=expense_type)
@@ -133,13 +136,14 @@ class ImportExpenses(ICommand):
             self._create_expense_use_case.execute(data=DTO(data=data))
         
     def run(self) -> None:
-        provider = self.get_provider_from_client()
+        provider = self.get_extractor_from_client()
         expenses: List[MonetaryValues] = []
 
         while True:
             try:
                 with open(self.get_file_path_from_client(), 'rb') as pdf:
-                    expenses.extend(provider.extract_expenses(buffered_pdf=pdf))
+                    extracted_expenses = provider.execute(data=DTO(data=ExtractExpensesFromPDFUseCaseRequestDTO(pdf_buffer=pdf)))
+                    expenses.extend(extracted_expenses.expenses)
                     pdf.close()
                 break
             except FileNotFoundError:
@@ -148,7 +152,7 @@ class ImportExpenses(ICommand):
                 logging.error('The provided file path heads to a directory.')
             except Exception as err:
                 logging.error(f'Could not open the provided file. {err}')
-
+# 
         confirmed = self.get_import_confirmation_from_client(expenses=expenses)
 
         if confirmed:

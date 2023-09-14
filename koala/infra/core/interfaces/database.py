@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import TypeVar
+from typing import Generic, TypeVar
 
 Connection = TypeVar('Connection')
 
-class IDatabase(ABC):
+class IDatabase(Generic[Connection], ABC):
 
     def __init__(self, connection_str: str) -> None:
         self._connection_str: str = connection_str

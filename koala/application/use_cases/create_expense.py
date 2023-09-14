@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Union
 from koala.application.core.interfaces.use_case import DTO, IUseCase
 from koala.domain.entities.expense import Expense, ExpenseType
 from koala.infra.core.interfaces.expense_repository import IExpensesRepository
@@ -10,12 +11,12 @@ class CreateExpenseUseCaseRequestDTO:
     purchased_at: str
     type: ExpenseType
     amount: float
-    installment_of: int = None
-    installment_to: int = None
+    installment_of: Union[None, int] = None
+    installment_to: Union[None, int] = None
 
 @dataclass
 class CreateExpenseUseCaseResponseDTO:
-    id: str
+    id: Union[str, int]
     created: bool
 
 class CreateExpenseUseCase(IUseCase):
@@ -24,7 +25,7 @@ class CreateExpenseUseCase(IUseCase):
         self._expenses_repository: IExpensesRepository = expenses_repository
     
     def execute(self, data: DTO) -> CreateExpenseUseCaseResponseDTO:
-        expense_data: CreateExpenseUseCaseRequestDTO = data.data
+        expense_data: CreateExpenseUseCaseRequestDTO = data.data # type: ignore
         date = datetime.strptime(expense_data.purchased_at, '%Y-%m-%d') \
             if isinstance(expense_data.purchased_at, str) \
             else expense_data.purchased_at

@@ -1,6 +1,6 @@
 # built-in
 from datetime import datetime
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 # third-party
 from dateutil.relativedelta import relativedelta
@@ -24,7 +24,8 @@ class CreateExpenseCommand(ICommand):
     """Command class for creating expenses."""
 
     def __init__(self, 
-                 create_expense_use_case: IUseCase) -> None:
+                 create_expense_use_case: IUseCase[CreateExpenseUseCaseRequestDTO, 
+                                                   CreateExpenseUseCaseResponseDTO]) -> None:
         """Initializes the CreateExpenseCommand class.
         
         Args:
@@ -69,7 +70,7 @@ class CreateExpenseCommand(ICommand):
 
         expense_type = self.get_expense_type()
 
-        expenses: List[Tuple[int, str]] = []
+        expenses: List[Tuple[Union[int, None], str]] = []
         installment_of = None
         installment_to = None
 
@@ -99,8 +100,7 @@ class CreateExpenseCommand(ICommand):
         while True:
             try:
                 for expense in self.create_expenses_data():
-                    created: CreateExpenseUseCaseResponseDTO = self._create_expense_use_case.execute(DTO(data=expense))
+                    created = self._create_expense_use_case.execute(DTO(data=expense))
                     print(f'[bold green]Created {expense.name} expense with id "{created.id}" successfully![/bold green]')
-                typer.echo('\n')
             except KeyboardInterrupt:
                 break

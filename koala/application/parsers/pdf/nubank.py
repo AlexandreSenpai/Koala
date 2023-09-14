@@ -1,24 +1,25 @@
+# built-in
 from datetime import datetime
 from io import BufferedReader
 import logging
 import re
 from typing import List
 
+# third-party
 import PyPDF2
 
+# interfaces
 from koala.infra.core.interfaces.pdf_parser import IPDFParser, MonetaryValues
 
 
 class NubankParser(IPDFParser):
 
     def __init__(self, 
-                 initial_costs_page: int = 3,
-                 pdf_reader: PyPDF2 = PyPDF2) -> None:
-        self._pdf_reader = pdf_reader
+                 initial_costs_page: int = 3) -> None:
         self.initial_costs_page = initial_costs_page
 
     def get_pages(self, buffered_pdf: BufferedReader) -> List[str]:
-        pdf = self._pdf_reader.PdfReader(buffered_pdf)
+        pdf = PyPDF2.PdfReader(buffered_pdf)
         return [page.extract_text() for page in pdf.pages[self.initial_costs_page:]]
     
     def replace_month_pt_to_en(self, date_str):
