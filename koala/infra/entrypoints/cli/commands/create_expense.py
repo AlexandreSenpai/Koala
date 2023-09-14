@@ -32,7 +32,7 @@ class CreateExpenseCommand(ICommand):
         """
         self._create_expense_use_case = create_expense_use_case
 
-    def get_installment_type(self) -> ExpenseType:
+    def get_expense_type(self) -> ExpenseType:
         """Prompts the user to select the type of installment for the expense.
         
         Returns:
@@ -67,7 +67,7 @@ class CreateExpenseCommand(ICommand):
         name = typer.prompt('Expense name')
         purchased_at = typer.prompt('Purchased at')
 
-        expense_type = self.get_installment_type()
+        expense_type = self.get_expense_type()
 
         expenses: List[Tuple[int, str]] = []
         installment_of = None

@@ -25,8 +25,11 @@ class CreateExpenseUseCase(IUseCase):
     
     def execute(self, data: DTO) -> CreateExpenseUseCaseResponseDTO:
         expense_data: CreateExpenseUseCaseRequestDTO = data.data
+        date = datetime.strptime(expense_data.purchased_at, '%Y-%m-%d') \
+            if isinstance(expense_data.purchased_at, str) \
+            else expense_data.purchased_at
 
-        expense = Expense(purchased_at=datetime.strptime(expense_data.purchased_at, '%Y-%m-%d'),
+        expense = Expense(purchased_at=date,
                           amount=expense_data.amount,
                           name=expense_data.name,
                           type=expense_data.type,

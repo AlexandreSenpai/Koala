@@ -16,6 +16,9 @@ from koala.infra.adapters.database.sqlite.models.base import Base
 from koala.infra.adapters.repositories.expenses import ExpensesRepository
 from koala.infra.core.utils.path import Path
 from koala.infra.entrypoints.cli.commands.create_expense import CreateExpenseCommand
+from koala.infra.entrypoints.cli.commands.import_expenses_by_pdf import ImportExpenses
+from koala.infra.parsers.pdf.c6 import C6Parser
+from koala.infra.parsers.pdf.nubank import NubankParser
 
 def init_database() -> SQLite:
     """Initialize the SQLite database and create all necessary tables.
@@ -47,6 +50,16 @@ def create_cli() -> None:
 
         register_command(name='create-expense', 
                          command=CreateExpenseCommand(create_expense_use_case=create_expense_use_case), 
+                         cli=cli)
+
+        import_expenses = ImportExpenses(create_expense_use_case=create_expense_use_case)
+        import_expenses.add_parser(name='nubank',
+                                   parser=NubankParser())
+        import_expenses.add_parser(name='c6',
+                                   parser=C6Parser())
+
+        register_command(name='import-expenses', 
+                         command=import_expenses, 
                          cli=cli)
         
         cli()
