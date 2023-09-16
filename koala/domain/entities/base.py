@@ -1,6 +1,6 @@
 from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Generic, TypeVar, Union
+from typing import Generic, Optional, TypeVar, Union
 
 T = TypeVar('T')
 
@@ -21,9 +21,9 @@ class Entity(Generic[T]):
     updated_at: datetime
 
     def __init__(self, 
-                 id: Union[int, str, None] = None,
-                 created_at: Union[datetime, None] = None,
-                 updated_at: Union[datetime, None] = None) -> None:
+                 id: Optional[Union[int, str]] = None,
+                 created_at: Optional[datetime] = None,
+                 updated_at: Optional[datetime] = None) -> None:
         """Initializes an Entity with given or default values.
 
         Args:

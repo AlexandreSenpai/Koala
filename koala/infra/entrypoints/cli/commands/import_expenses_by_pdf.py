@@ -2,7 +2,7 @@
 from datetime import datetime
 from enum import Enum
 import logging
-from typing import Dict, List, Literal
+from typing import Dict, List, Literal, cast
 
 # third-party
 from PyInquirer import prompt
@@ -20,7 +20,7 @@ from koala.domain.entities.expense import ExpenseType
 
 # interfaces
 from koala.infra.core.interfaces.command import ICommand
-from koala.infra.core.interfaces.pdf_parser import MonetaryValues
+from koala.application.core.interfaces.pdf_parser import MonetaryValues
 
 class AvailableExtractors(Enum):
     """Enum for available PDF extractors."""
@@ -117,16 +117,14 @@ class ImportExpenses(ICommand):
                                    "Installment To", 
                                    "Amount")
         for i, expense in enumerate(expenses):
-            date = datetime.strftime(expense.purchased_at, '%d/%m/%Y') \
-                if isinstance(expense.purchased_at, datetime) \
-                else expense.purchased_at
+            date = datetime.strftime(cast(datetime, expense.purchased_at), '%d/%m/%Y')
             
             output_table.add_row(str(i+1),
                                  date, 
                                  expense.name, 
                                  expense.installment_of, 
                                  expense.installment_to, 
-                                 expense.amount)
+                                 f"R$ {expense.amount}")
         
         console.Console().print(output_table)
 

@@ -37,4 +37,4 @@ class IUseCase(Generic[T, V], ABC):
         Returns:
             An object of type V representing the output of the use case.
         """
-        pass
+        ...

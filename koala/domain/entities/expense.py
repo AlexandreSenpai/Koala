@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Union
+from typing import Optional, Union, cast
 from koala.domain.entities.base import Entity
 
 class ExpenseType(Enum):
@@ -39,11 +39,11 @@ class Expense(Entity):
                  name: str,
                  type: ExpenseType,
                  amount: float,
-                 installment_of: Union[int, None] = None,
-                 installment_to: Union[int, None] = None,
-                 id: Union[int, str, None] = None, 
-                 created_at: Union[datetime, None] = None, 
-                 updated_at: Union[datetime, None] = None) -> None:
+                 installment_of: Optional[int] = None,
+                 installment_to: Optional[int] = None,
+                 id: Optional[Union[int, str]] = None, 
+                 created_at: Optional[datetime] = None, 
+                 updated_at: Optional[datetime] = None) -> None:
         """Initializes an Expense entity with given or default values.
 
         Args:
@@ -64,11 +64,23 @@ class Expense(Entity):
         self.name = name
         self.type = type
         self.amount = amount
+
         self._installment_of = int(installment_of) if installment_of is not None else None
         self._installment_to = int(installment_to) if installment_to is not None else None
+
+        if type == ExpenseType.INSTALLMENT: self.validate_installments(installment_of=cast(int, self._installment_of),
+                                                                       installment_to=cast(int, self._installment_to))
     
+    def validate_installments(self,
+                              installment_of: Optional[int] = None, 
+                              installment_to: Optional[int] = None) -> None:
+        if installment_of is None or installment_to is None:
+            raise Exception('You must define installment_of and installment_to because this expense was labeled as installment.')
+        if installment_of > installment_to:
+            raise Exception('You cant create an expense with installment of greater than installment to.')
+
     @property
-    def installment_of(self) -> Union[int, None]:
+    def installment_of(self) -> Optional[int]:
         """Property to get the current installment number.
 
         Returns:
@@ -77,7 +89,7 @@ class Expense(Entity):
         return self._installment_of
 
     @property
-    def installment_to(self) -> Union[int, None]:
+    def installment_to(self) -> Optional[int]:
         """Property to get the total number of installments.
 
         Returns:

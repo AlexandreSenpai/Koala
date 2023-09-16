@@ -6,7 +6,7 @@ import typer
 
 # use-cases
 from koala.application.use_cases.create_expense import CreateExpenseUseCase
-from koala.application.use_cases.import_expenses_from_pdf import ExtractExpensesFromPDFUseCase
+from koala.application.use_cases.extract_expenses_from_pdf import ExtractExpensesFromPDFUseCase
 
 # parsers
 from koala.application.parsers.pdf.c6 import C6Parser

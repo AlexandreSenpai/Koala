@@ -3,7 +3,7 @@ from koala.application.core.interfaces.extract_expenses_from_pdf import (Extract
                                                                          ExtractExpensesFromPDFUseCaseResponseDTO, 
                                                                          IExtractExpensesFromPDF)
 from koala.application.core.interfaces.use_case import DTO
-from koala.infra.core.interfaces.pdf_parser import IPDFParser
+from koala.application.core.interfaces.pdf_parser import IPDFParser
 
 
 class ExtractExpensesFromPDFUseCase(IExtractExpensesFromPDF):
@@ -23,7 +23,8 @@ class ExtractExpensesFromPDFUseCase(IExtractExpensesFromPDF):
         """
         self._pdf_parser = pdf_parser
 
-    def execute(self, data: DTO[ExtractExpensesFromPDFUseCaseRequestDTO]) -> ExtractExpensesFromPDFUseCaseResponseDTO:
+    def execute(self, 
+                data: DTO[ExtractExpensesFromPDFUseCaseRequestDTO]) -> ExtractExpensesFromPDFUseCaseResponseDTO:
         """Executes the use case to extract expenses from a PDF.
 
         Args:
