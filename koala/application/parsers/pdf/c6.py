@@ -6,10 +6,11 @@ import re
 from typing import List
 
 # third-party
-import PyPDF2
+import pypdf
 
 # interfaces
-from koala.infra.core.interfaces.pdf_parser import IPDFParser, MonetaryValues
+from koala.application.core.interfaces.pdf_parser import IPDFParser, MonetaryValues
+from koala.application.core.utils.date import Date
 
 
 class C6Parser(IPDFParser):
@@ -38,23 +39,8 @@ class C6Parser(IPDFParser):
         Returns:
             A list of strings, each representing the text content of a PDF page.
         """
-        pdf = PyPDF2.PdfReader(buffered_pdf)
+        pdf = pypdf.PdfReader(buffered_pdf)
         return [page.extract_text() for page in pdf.pages[self.initial_costs_page:]]
-    
-    def replace_month_pt_to_en(self, date_str):
-        """Replaces Portuguese month abbreviations with English ones in a date string.
-
-        Args:
-            date_str: A string containing a date with Portuguese month abbreviations.
-
-        Returns:
-            A string containing the date with English month abbreviations.
-        """
-        pt_months = ('JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ')
-        en_months = ('JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC')
-        for pt, en in zip(pt_months, en_months):
-            date_str = date_str.upper().replace(pt, en)
-        return date_str
     
     def get_monetary_values(self, page: str) -> List[MonetaryValues]:
         """Extracts monetary values from a given PDF page.
@@ -76,8 +62,8 @@ class C6Parser(IPDFParser):
                 installment_of = installments.split('/')[0] if installments else None
                 installment_to = installments.split('/')[1] if installments else None
 
-                date = self.replace_month_pt_to_en(f"{date} {datetime.now().year}")
-                expenses.append(MonetaryValues(purchased_at=datetime.strptime(date, "%d %b %Y"),
+                date = Date.replace_month_pt_to_numerical(date_str=f"{date} {datetime.now().year}")
+                expenses.append(MonetaryValues(purchased_at=date,
                                                name=name,
                                                amount=str(value.replace(',', '.')),
                                                installment_of=installment_of,

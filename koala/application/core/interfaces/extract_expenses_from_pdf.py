@@ -5,7 +5,7 @@ from typing import List
 
 # interfaces
 from koala.application.core.interfaces.use_case import IUseCase
-from koala.infra.core.interfaces.pdf_parser import IPDFParser, MonetaryValues
+from koala.application.core.interfaces.pdf_parser import IPDFParser, MonetaryValues
 
 @dataclass
 class ExtractExpensesFromPDFUseCaseRequestDTO:

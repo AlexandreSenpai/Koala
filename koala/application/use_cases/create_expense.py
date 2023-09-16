@@ -1,7 +1,14 @@
-from dataclasses import dataclass
+# built-in
 from datetime import datetime
-from typing import Union
+from typing import Optional, Union, cast
+
+# third-party
+from pydantic.dataclasses import dataclass
+from pydantic import field_validator
+
+# interfaces
 from koala.application.core.interfaces.use_case import DTO, IUseCase
+from koala.application.core.utils.transformers import Transformer
 from koala.domain.entities.expense import Expense, ExpenseType
 from koala.infra.core.interfaces.expense_repository import IExpensesRepository
 
@@ -18,11 +25,21 @@ class CreateExpenseUseCaseRequestDTO:
         installment_to: An optional integer representing the total number of installments.
     """
     name: str
-    purchased_at: str
+    purchased_at: Union[datetime, str]
     type: ExpenseType
     amount: float
-    installment_of: Union[None, int] = None
-    installment_to: Union[None, int] = None
+    installment_of: Optional[Union[int, str]] = None
+    installment_to: Optional[Union[int, str]] = None
+
+    @field_validator('purchased_at', mode='before')
+    def transform_purchased_at(cls, 
+                               date: Union[datetime, str]) -> datetime:
+        return Transformer.string_to_datetime(date=date)
+
+    @field_validator('installment_of', mode='before')
+    def transform_installment_of(cls, 
+                                 installment: Union[None, str, int]) -> Union[int, None]:
+        return int(installment) if installment is not None else None
 
 @dataclass
 class CreateExpenseUseCaseResponseDTO:
@@ -53,7 +70,7 @@ class CreateExpenseUseCase(IUseCase):
         """
         self._expenses_repository: IExpensesRepository = expenses_repository
     
-    def execute(self, data: DTO) -> CreateExpenseUseCaseResponseDTO:
+    def execute(self, data: DTO[CreateExpenseUseCaseRequestDTO]) -> CreateExpenseUseCaseResponseDTO:
         """Executes the use case to create an expense.
 
         Args:
@@ -62,11 +79,8 @@ class CreateExpenseUseCase(IUseCase):
         Returns:
             A CreateExpenseUseCaseResponseDTO object representing the response.
         """
-        expense_data: CreateExpenseUseCaseRequestDTO = data.data # type: ignore
-        date = datetime.strptime(expense_data.purchased_at, '%Y-%m-%d') \
-            if isinstance(expense_data.purchased_at, str) \
-            else expense_data.purchased_at
-
+        expense_data = data.data
+        date: datetime = cast(datetime, expense_data.purchased_at)
         expense = Expense(purchased_at=date,
                           amount=expense_data.amount,
                           name=expense_data.name,
