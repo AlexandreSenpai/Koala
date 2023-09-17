@@ -208,6 +208,8 @@ class ImportExpenses(ICommand):
                 logging.error('The provided file path heads to a directory.')
             except Exception as err:
                 logging.error(f'Could not open the provided file. {err}')
+            except KeyboardInterrupt:
+                break
 # 
         confirmed = self.get_import_confirmation_from_client(expenses=expenses)
 
