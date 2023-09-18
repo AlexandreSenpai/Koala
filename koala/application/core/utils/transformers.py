@@ -7,6 +7,8 @@ class Transformer:
     @staticmethod
     def string_to_datetime(date: Union[str, datetime]) -> datetime:
         if isinstance(date, datetime): return date
+        if not isinstance(date, str):
+            raise Exception('This method only accepts datetime or string parameters.')
 
         matched = re.fullmatch(r'\d{4}-\d{2}-\d{2}', date)
         if matched: return datetime.strptime(date, '%Y-%m-%d')

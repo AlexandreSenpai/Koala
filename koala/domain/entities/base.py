@@ -1,6 +1,6 @@
 from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Generic, Optional, TypeVar, Union
+from typing import Generic, Optional, TypeVar, Union, cast
 
 T = TypeVar('T')
 
@@ -17,7 +17,7 @@ class Entity(Generic[T]):
     """
 
     id: Union[int, str]
-    created_at: datetime
+    __created_at: datetime
     updated_at: datetime
 
     def __init__(self, 
@@ -32,14 +32,29 @@ class Entity(Generic[T]):
             updated_at: A Union of datetime and None representing when the entity was last updated. Defaults to current UTC time.
         """
 
+        if not id is None and not isinstance(id, str) and not isinstance(id, int):
+            raise Exception('Id must be an str or int value.')
+
         self.id = id if id is not None else 0
-        self.created_at = created_at if created_at is not None else datetime.utcnow()
+        self.__created_at = created_at if created_at is not None else datetime.utcnow()
         self.updated_at = updated_at if updated_at is not None else datetime.utcnow()
 
+    @property
+    def created_at(self) -> datetime:
+        """Created at must be immutable.
+
+        Returns:
+            created_at: datetime value representing the entity creation date.
+        """
+        return self.__created_at
+    
     def to_dict(self) -> T:
         """Converts the entity to a dictionary.
 
         Returns:
             A dictionary representation of the entity.
         """
-        return asdict(self) # type: ignore
+        keys_to_omit = ['_Entity__created_at']
+        object_omitted = {key: val for key, val in asdict(self).items() if key not in keys_to_omit}
+        return cast(T, {**object_omitted, 
+                        'created_at': self.created_at})

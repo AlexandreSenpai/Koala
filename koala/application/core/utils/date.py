@@ -1,3 +1,6 @@
+import re
+
+
 class Date:
     @staticmethod
     def replace_month_pt_to_numerical(date_str: str) -> str:
@@ -9,10 +12,14 @@ class Date:
         Returns:
             A string containing the date with numerical month order.
         """
+
         replacement_mapping = {'JAN': '01', 'FEV': '02', 'MAR': '03', 
                                'ABR': '04', 'MAI': '05', 'JUN': '06', 
                                'JUL': '07', 'AGO': '08', 'SET': '09',
                                'OUT': '10', 'NOV': '11', 'DEZ': '12'}
+
+        if not re.fullmatch(r'\d{2}\s\w{3}\s\d{4}', date_str):
+            raise Exception('Wrong date_str format. This function only accepts: dd B YYYY, for example: 20 JUL 1999')
         
         splitted_date = date_str.upper().split()
         month = splitted_date[1]

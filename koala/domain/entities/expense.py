@@ -105,6 +105,11 @@ class Expense(Entity):
         Args:
             installment: An integer representing the current installment number.
         """
+        if isinstance(installment, str) and not installment.isdigit():
+            raise Exception('You should only pass digit parameters.')
+        if self.type != ExpenseType.INSTALLMENT:
+            raise Exception('You can only set installment to expenses of type installment.')
+
         self._installment_of = int(installment)
     
     @installment_to.setter
@@ -115,4 +120,9 @@ class Expense(Entity):
         Args:
             installment: An integer representing the total number of installments.
         """
+        if isinstance(installment, str) and not installment.isdigit():
+            raise Exception('You should only pass digit parameters.')
+        if self.type != ExpenseType.INSTALLMENT:
+            raise Exception('You can only set installment to expenses of type installment.')
+
         self._installment_to = int(installment)
