@@ -33,6 +33,11 @@ class MonetaryValues:
                                date: Union[str, datetime]) -> datetime:
         return Transformer.string_to_datetime(date=date)
     
+    @field_validator("amount", mode='before')
+    def transform_amount(cls,
+                         amount: Union[float, str]) -> float:
+        return Transformer.string_to_float(value=amount)
+    
 
 class IPDFParser(ABC):
     """Abstract base class for PDF parsers.

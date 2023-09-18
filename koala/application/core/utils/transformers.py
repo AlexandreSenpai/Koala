@@ -13,3 +13,9 @@ class Transformer:
         matched = re.fullmatch(r'\d{4}-\d{2}-\d{2}', date)
         if matched: return datetime.strptime(date, '%Y-%m-%d')
         raise Exception('Invalid input date. You must input a valid YYYY-MM-DD date.')
+    
+    @staticmethod
+    def string_to_float(value: Union[str, float]) -> float:
+        if isinstance(value, str):
+            return float(value.replace(',', '.'))
+        return float(value)

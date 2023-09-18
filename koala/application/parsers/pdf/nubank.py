@@ -1,19 +1,18 @@
 # built-in
 from datetime import datetime
-from io import BufferedReader, BytesIO
 import logging
 import re
-from typing import List, Union
+from typing import List
 
-# third-party
-import pypdf
+# parsers
+from koala.application.parsers.pdf.default import DefaultParser
 
 # interfaces
-from koala.application.core.interfaces.pdf_parser import IPDFParser, MonetaryValues
+from koala.application.core.interfaces.pdf_parser import MonetaryValues
 from koala.application.core.utils.date import Date
 
 
-class NubankParser(IPDFParser):
+class NubankParser(DefaultParser):
     """Parser for extracting monetary values from Nubank PDFs.
 
     Attributes:
@@ -30,27 +29,8 @@ class NubankParser(IPDFParser):
             initial_costs_page: An integer indicating the page number where the costs
                 information starts in the PDF. Defaults to 3.
         """
-        self.initial_costs_page = initial_costs_page
+        super().__init__(initial_costs_page=initial_costs_page)
 
-    def get_pages(self, 
-                  buffered_pdf: Union[BufferedReader, BytesIO],
-                  initial_page: Union[int, None] = None) -> List[str]:
-        """Extracts text from the PDF pages starting from `initial_costs_page`.
-
-        Args:
-            buffered_pdf: A buffered PDF file.
-
-        Returns:
-            A list of strings, each representing the text content of a PDF page.
-        """
-        initial_page = initial_page if initial_page is not None else self.initial_costs_page
-        pdf = pypdf.PdfReader(buffered_pdf)
-        
-        if len(pdf.pages) < initial_page:
-            raise Exception('Initial page is over the maximum pages of the pdf.')
-        
-        return [page.extract_text() for page in pdf.pages[initial_page:]]
-    
     def get_monetary_values(self, page: str) -> List[MonetaryValues]:
         """Extracts monetary values from a given PDF page.
 
@@ -82,24 +62,5 @@ class NubankParser(IPDFParser):
             except Exception as err:
                 logging.warn(f'Could not process an item. {err}')
                 continue
-
-        return expenses
-            
-
-    def extract_expenses(self, 
-                         buffered_pdf: BufferedReader) -> List[MonetaryValues]:
-        """Extracts all expenses from the PDF.
-
-        Args:
-            buffered_pdf: A buffered PDF file.
-
-        Returns:
-            A list of MonetaryValues objects representing all extracted expenses.
-        """
-        pages = self.get_pages(buffered_pdf=buffered_pdf)
-        
-        expenses = []
-        for page in pages:
-            expenses.extend(self.get_monetary_values(page))
 
         return expenses

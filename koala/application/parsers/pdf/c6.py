@@ -8,12 +8,15 @@ from typing import List
 # third-party
 import pypdf
 
+# parsers
+from koala.application.parsers.pdf.default import DefaultParser
+
 # interfaces
-from koala.application.core.interfaces.pdf_parser import IPDFParser, MonetaryValues
+from koala.application.core.interfaces.pdf_parser import MonetaryValues
 from koala.application.core.utils.date import Date
 
 
-class C6Parser(IPDFParser):
+class C6Parser(DefaultParser):
     """Parses PDF files from C6 Bank to extract financial information.
 
     Attributes:
@@ -28,19 +31,7 @@ class C6Parser(IPDFParser):
             initial_costs_page: An integer indicating the page number where the costs
                 information starts in the PDF. Defaults to 2.
         """
-        self.initial_costs_page = initial_costs_page
-
-    def get_pages(self, buffered_pdf: BufferedReader) -> List[str]:
-        """Extracts text from the PDF pages starting from `initial_costs_page`.
-
-        Args:
-            buffered_pdf: A buffered PDF file.
-
-        Returns:
-            A list of strings, each representing the text content of a PDF page.
-        """
-        pdf = pypdf.PdfReader(buffered_pdf)
-        return [page.extract_text() for page in pdf.pages[self.initial_costs_page:]]
+        super().__init__(initial_costs_page=initial_costs_page)
     
     def get_monetary_values(self, page: str) -> List[MonetaryValues]:
         """Extracts monetary values from a given PDF page.
@@ -65,30 +56,11 @@ class C6Parser(IPDFParser):
                 date = Date.replace_month_pt_to_numerical(date_str=f"{date} {datetime.now().year}")
                 expenses.append(MonetaryValues(purchased_at=date,
                                                name=name,
-                                               amount=str(value.replace(',', '.')),
+                                               amount=value,
                                                installment_of=installment_of,
                                                installment_to=installment_to))
             except Exception as err:
                 logging.warn(f'Could not process an item. {err}')
                 continue
-
-        return expenses
-            
-
-    def extract_expenses(self, 
-                         buffered_pdf: BufferedReader) -> List[MonetaryValues]:
-        """Extracts all expenses from the PDF.
-
-        Args:
-            buffered_pdf: A buffered PDF file.
-
-        Returns:
-            A list of MonetaryValues objects representing all extracted expenses.
-        """
-        pages = self.get_pages(buffered_pdf=buffered_pdf)
-        
-        expenses = []
-        for page in pages:
-            expenses.extend(self.get_monetary_values(page))
 
         return expenses
