@@ -215,8 +215,7 @@ class ImportExpenses(ICommand):
 
         if confirmed:
             self.create_expenses(expenses=expenses)
-        
-        print('[bold green]Expenses Created Successfully![/bold green]')
+            print('[bold green]Expenses Created Successfully![/bold green]')
         
 
     

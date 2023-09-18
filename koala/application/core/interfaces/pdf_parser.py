@@ -24,9 +24,9 @@ class MonetaryValues:
     """
     purchased_at: Union[str, datetime]
     name: str
-    amount: str
-    installment_of: Union[str, None]
-    installment_to: Union[str, None]
+    amount: float
+    installment_of: Union[int, None]
+    installment_to: Union[int, None]
 
     @field_validator("purchased_at", mode='before')
     def transform_purchased_at(cls, 

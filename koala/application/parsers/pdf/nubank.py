@@ -19,6 +19,9 @@ class NubankParser(IPDFParser):
     Attributes:
         initial_costs_page (int): The page number where the costs start in the PDF.
     """
+
+    __EXPENSE_PATTERN = r"(\d{2} \w{3})\s*\n\s*\n([^\n]+)(?:\s+-\s+(\d+/\d+))?\s*\n([\d,]+)"
+    
     def __init__(self, 
                  initial_costs_page: int = 3) -> None:
         """Initializes NubankParser with the given page number.
@@ -50,8 +53,8 @@ class NubankParser(IPDFParser):
         Returns:
             A list of MonetaryValues objects representing the extracted monetary values.
         """
-        pattern = r"(\d{2} \w{3})\s*\n\s*\n([^\n]+)(?:\s+-\s+(\d+/\d+))?\s*\n([\d,]+)"
-        matches = re.findall(pattern, page)
+    
+        matches = re.findall(self.__EXPENSE_PATTERN, page)
 
         expenses = []
 
@@ -66,7 +69,7 @@ class NubankParser(IPDFParser):
 
                 expenses.append(MonetaryValues(purchased_at=date,
                                                name=name,
-                                               amount=str(value.replace(',', '.')),
+                                               amount=value.replace(',', '.'),
                                                installment_of=installment_of,
                                                installment_to=installment_to))
             except Exception as err:
