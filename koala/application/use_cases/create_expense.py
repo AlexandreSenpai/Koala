@@ -40,6 +40,13 @@ class CreateExpenseUseCaseRequestDTO:
     def transform_installment_of(cls, 
                                  installment: Union[None, str, int]) -> Union[int, None]:
         return int(installment) if installment is not None else None
+    
+    @field_validator('name', mode='before')
+    def validate_name(cls, 
+                      name: str) -> str:
+        if not name:
+            raise ValueError('You must provide a valid expense name.')
+        return name
 
 @dataclass
 class CreateExpenseUseCaseResponseDTO:
@@ -85,12 +92,12 @@ class CreateExpenseUseCase(IUseCase):
                           amount=expense_data.amount,
                           name=expense_data.name,
                           type=expense_data.type,
-                          installment_of=expense_data.installment_of,
-                          installment_to=expense_data.installment_to)
+                          installment_of=cast(int, expense_data.installment_of),
+                          installment_to=cast(int, expense_data.installment_to))
         
         expense = self._expenses_repository.create_expense(expense=expense)
 
         return CreateExpenseUseCaseResponseDTO(id=expense.id,
-                                               created=True)
+                                               created=True if expense.id != 0 else False)
 
 
