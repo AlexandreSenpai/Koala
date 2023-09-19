@@ -1,6 +1,3 @@
-# built-in
-from typing import Union
-
 # third-party
 import typer
 
@@ -37,7 +34,9 @@ def init_database() -> SQLite:
     Base.metadata.create_all(database._engine)
     return database
 
-def register_command(name: str, command: ICommand, cli: typer.Typer, ) -> None:
+def register_command(name: str, 
+                     command: ICommand, 
+                     cli: typer.Typer) -> None:
     """Register a command to the CLI.
     
     Args:
